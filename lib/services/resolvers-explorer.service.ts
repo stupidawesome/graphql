@@ -59,12 +59,6 @@ export class ResolversExplorerService extends BaseExplorerService {
       name => extractMetadata(instance, prototype, name, predicate),
     );
     return resolvers.filter(resolver => !!resolver).map(resolver => {
-      if (resolver.type === SUBSCRIPTION_TYPE) {
-        return {
-          ...resolver,
-          callback: instance[resolver.methodName](),
-        };
-      }
       const resolverCallback = this.externalContextCreator.create(
         instance,
         prototype[resolver.methodName],
@@ -72,6 +66,14 @@ export class ResolversExplorerService extends BaseExplorerService {
         PARAM_ARGS_METADATA,
         this.gqlParamsFactory,
       );
+      if (resolver.type === SUBSCRIPTION_TYPE) {
+        return {
+          ...resolver,
+          callback: {
+            subscribe: resolverCallback,
+          },
+        };
+      }
       return {
         ...resolver,
         callback: resolverCallback,
